@@ -1,22 +1,22 @@
-from app.models.assessment import Assessment
-from app.models.score_profile import ScoreProfile
+from typing import Dict, Tuple
 
 
-ddef calculate_score_from_analytics(analytics, profile) -> tuple[float, dict]:
-    infra = analytics.infrastructure * float(profile.infrastructure_weight)
-    lighting = analytics.lighting * float(profile.lighting_weight)
-    noise = analytics.noise * float(profile.noise_weight)
-    insolation = analytics.insolation * float(profile.insolation_weight)
-    development = analytics.development * float(profile.development_weight)
-
-    total = infra + lighting + noise + insolation + development
-
-    details = {
-        "infrastructure_score": round(infra, 2),
-        "lighting_score": round(lighting, 2),
-        "noise_score": round(noise, 2),
-        "insolation_score": round(insolation, 2),
-        "development_score": round(development, 2),
+def calculate_score_from_analytics(analytics, profile) -> Tuple[float, Dict[str, float]]:
+    metrics = {
+        "infrastructure": float(getattr(analytics, "infrastructure", 0) or 0),
+        "lighting": float(getattr(analytics, "lighting", 0) or 0),
+        "noise": float(getattr(analytics, "noise", 0) or 0),
+        "insolation": float(getattr(analytics, "insolation", 0) or 0),
+        "development": float(getattr(analytics, "development", 0) or 0),
     }
 
-    return round(total, 2), details
+    breakdown: Dict[str, float] = {}
+    total_score = 0.0
+
+    for metric_name, metric_value in metrics.items():
+        weight = float(getattr(profile, f"{metric_name}_weight", 0) or 0)
+        weighted_value = metric_value * weight
+        breakdown[metric_name] = round(weighted_value, 2)
+        total_score += weighted_value
+
+    return round(total_score, 2), breakdown
