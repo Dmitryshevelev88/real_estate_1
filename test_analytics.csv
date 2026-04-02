@@ -1,0 +1,3 @@
+external_id,display_name,address_full,project_name,city,street,house,building,property_type,status,latitude,longitude,infrastructure,lighting,noise,insolation,development
+1001,ЖК Примерный,Москва ул. Примерная 10,ЖК Примерный,Москва,Примерная,10,,apartment,built,55.75,37.61,8,7,5,8,6
+1002,ЖК Старт,Москва ул. Новая 5,ЖК Старт,Москва,Новая,5,,apartment,building,55.76,37.62,7,6,6,7,5
