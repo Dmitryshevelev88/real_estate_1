@@ -13,3 +13,12 @@ api_router.include_router(
     prefix="/catalog-properties",
     tags=["catalog-properties"],
 )
+from app.api.v1.endpoints import (
+    admin_imports,
+    assessments,
+    auth,
+    catalog_properties,
+    properties,
+    score_profiles,
+)
+api_router.include_router(admin_imports.router)
