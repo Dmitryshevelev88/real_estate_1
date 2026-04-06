@@ -1,12 +1,12 @@
 from typing import Dict, Tuple
 
 
-def _calculate_weighted_score(source, profile) -> Tuple[float, Dict[str, float]]:
-    infrastructure = float(getattr(source, "infrastructure", 0) or 0)
-    lighting = float(getattr(source, "lighting", 0) or 0)
-    noise = float(getattr(source, "noise", 0) or 0)
-    insolation = float(getattr(source, "insolation", 0) or 0)
-    development = float(getattr(source, "development", 0) or 0)
+def calculate_score_from_analytics(analytics, profile) -> Tuple[float, Dict[str, float]]:
+    infrastructure = float(getattr(analytics, "infrastructure", 0) or 0)
+    lighting = float(getattr(analytics, "lighting", 0) or 0)
+    noise = float(getattr(analytics, "noise", 0) or 0)
+    insolation = float(getattr(analytics, "insolation", 0) or 0)
+    development = float(getattr(analytics, "development", 0) or 0)
 
     infrastructure_weight = float(getattr(profile, "infrastructure_weight", 0) or 0)
     lighting_weight = float(getattr(profile, "lighting_weight", 0) or 0)
@@ -20,7 +20,7 @@ def _calculate_weighted_score(source, profile) -> Tuple[float, Dict[str, float]]
     insolation_score = insolation * insolation_weight
     development_score = development * development_weight
 
-    total = (
+    total_score = (
         infra_score
         + lighting_score
         + noise_score
@@ -28,7 +28,7 @@ def _calculate_weighted_score(source, profile) -> Tuple[float, Dict[str, float]]
         + development_score
     )
 
-    details = {
+    breakdown = {
         "infrastructure_score": round(infra_score, 2),
         "lighting_score": round(lighting_score, 2),
         "noise_score": round(noise_score, 2),
@@ -36,7 +36,7 @@ def _calculate_weighted_score(source, profile) -> Tuple[float, Dict[str, float]]
         "development_score": round(development_score, 2),
     }
 
-    return round(total, 2), details
+    return round(total_score, 2), breakdown
 
 
 def calculate_score(assessment, profile) -> Tuple[float, Dict[str, float]]:

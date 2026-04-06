@@ -12,11 +12,10 @@ class CatalogProperty(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     external_id: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
 
-    display_name: Mapped[str] = mapped_column(String(255))
+    display_name: Mapped[str] = mapped_column(String(255), index=True)
     address_full: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    project_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-
-    city: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    project_name: Mapped[str | None] = mapped_column(String(255), index=True, nullable=True)
+    city: Mapped[str | None] = mapped_column(String(100), index=True, nullable=True)
     street: Mapped[str | None] = mapped_column(String(150), nullable=True)
     house: Mapped[str | None] = mapped_column(String(50), nullable=True)
     building: Mapped[str | None] = mapped_column(String(50), nullable=True)
