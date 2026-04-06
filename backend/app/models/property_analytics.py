@@ -22,8 +22,9 @@ class PropertyAnalytics(Base):
 
     source_type: Mapped[str] = mapped_column(String(50), default="csv")
     source_label: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    version: Mapped[int] = mapped_column(Integer, default=1)
-    is_published: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    version: Mapped[int] = mapped_column(Integer, default=1, index=True)
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
