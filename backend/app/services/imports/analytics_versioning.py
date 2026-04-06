@@ -1,29 +1,49 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.models.property_analytics import PropertyAnalytics
-from app.schemas.imports import CatalogImportRow
+from app.schemas.imports import CsvImportRow
 
 
-def unpublish_previous_analytics(db: Session, catalog_property_id: int) -> None:
-    items = db.scalars(
-        select(PropertyAnalytics).where(
+def _same_metrics(analytics: PropertyAnalytics, row: CsvImportRow) -> bool:
+    return (
+        analytics.infrastructure == row.infrastructure
+        and analytics.lighting == row.lighting
+        and analytics.noise == row.noise
+        and analytics.insolation == row.insolation
+        and analytics.development == row.development
+    )
+
+
+def publish_from_import(
+    db: Session,
+    *,
+    catalog_property_id: int,
+    row: CsvImportRow,
+    source_label: str,
+) -> tuple[PropertyAnalytics, str]:
+    latest = db.scalar(
+        select(PropertyAnalytics)
+        .where(PropertyAnalytics.catalog_property_id == catalog_property_id)
+        .order_by(PropertyAnalytics.version.desc(), PropertyAnalytics.id.desc())
+    )
+
+    if latest and latest.is_published and _same_metrics(latest, row):
+        latest.source_type = "csv"
+        latest.source_label = source_label
+        db.flush()
+        return latest, "unchanged"
+
+    next_version = 1 if latest is None else latest.version + 1
+
+    db.execute(
+        update(PropertyAnalytics)
+        .where(
             PropertyAnalytics.catalog_property_id == catalog_property_id,
             PropertyAnalytics.is_published.is_(True),
         )
-    ).all()
-
-    for item in items:
-        item.is_published = False
-        db.add(item)
-
-
-def create_analytics_version(
-    db: Session,
-    catalog_property_id: int,
-    row: CatalogImportRow,
-) -> PropertyAnalytics:
-    unpublish_previous_analytics(db, catalog_property_id)
+        .values(is_published=False)
+    )
 
     analytics = PropertyAnalytics(
         catalog_property_id=catalog_property_id,
@@ -33,12 +53,10 @@ def create_analytics_version(
         insolation=row.insolation,
         development=row.development,
         source_type="csv",
-        source_label=row.source_label,
-        version=row.version,
+        source_label=source_label,
+        version=next_version,
         is_published=True,
     )
-
     db.add(analytics)
     db.flush()
-
-    return analytics
+    return analytics, "created" if latest is None else "versioned"

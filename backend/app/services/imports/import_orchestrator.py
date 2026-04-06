@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.import_batch import ImportBatch
-from app.services.imports.analytics_versioning import create_analytics_version
+from app.services.imports.analytics_versioning import publish_from_import
 from app.services.imports.batch_service import (
     mark_batch_done,
     mark_batch_failed,
@@ -18,6 +18,7 @@ def run_catalog_csv_import(
 ) -> dict:
     try:
         rows, errors = parse_catalog_csv(content)
+
         mark_batch_processing(db, batch, rows_total=len(rows) + len(errors))
 
         rows_created = 0
@@ -25,7 +26,13 @@ def run_catalog_csv_import(
 
         for row in rows:
             item, created = upsert_catalog_property(db, row)
-            create_analytics_version(db, item.id, row)
+
+            publish_from_import(
+                db,
+                catalog_property_id=item.id,
+                row=row,
+                source_label=batch.filename,
+            )
 
             if created:
                 rows_created += 1
