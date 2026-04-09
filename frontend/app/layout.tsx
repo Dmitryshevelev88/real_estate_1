@@ -1,30 +1,47 @@
-import './globals.css'
-import Link from 'next/link'
-import type { ReactNode } from 'react'
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import './globals.css';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Real Estate MVP',
-}
+  description: 'MVP сервиса оценки недвижимости',
+};
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="ru">
-      <body>
+      <body className="min-h-screen bg-gray-50 text-gray-900">
         <div className="min-h-screen">
-          <header className="border-b bg-white">
-            <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
-              <Link href="/" className="font-semibold">Real Estate MVP</Link>
-              <nav className="flex gap-4 text-sm text-slate-600">
-                <Link href="/login">Логин</Link>
-                <Link href="/properties">Объекты</Link>
-                <Link href="/properties/new">Новый объект</Link>
-                <Link href="/assessments">Оценки</Link>
+          <header className="border-b border-gray-200 bg-white">
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+              <Link href="/" className="text-lg font-semibold">
+                Real Estate MVP
+              </Link>
+
+              <nav className="flex items-center gap-3 text-sm">
+                <Link
+                  href="/"
+                  className="rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Главная
+                </Link>
+                <Link
+                  href="/admin"
+                  className="rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Админка
+                </Link>
               </nav>
             </div>
           </header>
-          <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+
+          <div>{children}</div>
         </div>
       </body>
     </html>
-  )
+  );
 }

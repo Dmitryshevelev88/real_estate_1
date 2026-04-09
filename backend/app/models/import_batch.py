@@ -10,7 +10,6 @@ class ImportBatch(Base):
     __tablename__ = "import_batches"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-
     filename: Mapped[str] = mapped_column(String(255))
     source_type: Mapped[str] = mapped_column(String(50), default="csv")
     status: Mapped[str] = mapped_column(String(50), default="pending")
@@ -21,10 +20,13 @@ class ImportBatch(Base):
     rows_failed: Mapped[int] = mapped_column(Integer, default=0)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        DateTime(timezone=True),
+        server_default=func.now(),
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
     )
 
     error_message: Mapped[str | None] = mapped_column(String(1000), nullable=True)

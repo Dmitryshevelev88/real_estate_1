@@ -2,14 +2,15 @@ from app.services.imports.csv_parser import parse_catalog_csv
 
 
 def test_parse_catalog_csv_valid():
-    content = """display_name,infrastructure,lighting,noise,insolation,development
-ЖК Солнечный,8,7,6,9,7
+    content = """external_id,display_name,infrastructure,lighting,noise,insolation,development
+1001,ЖК Солнечный,8,7,6,9,7
 """.encode("utf-8")
 
     rows, errors = parse_catalog_csv(content)
 
     assert len(rows) == 1
     assert len(errors) == 0
+    assert rows[0].external_id == "1001"
     assert rows[0].display_name == "ЖК Солнечный"
     assert rows[0].infrastructure == 8
     assert rows[0].lighting == 7
@@ -19,8 +20,8 @@ def test_parse_catalog_csv_valid():
 
 
 def test_parse_catalog_csv_invalid_metric():
-    content = """display_name,infrastructure,lighting,noise,insolation,development
-ЖК Солнечный,99,7,6,9,7
+    content = """external_id,display_name,infrastructure,lighting,noise,insolation,development
+1001,ЖК Солнечный,99,7,6,9,7
 """.encode("utf-8")
 
     rows, errors = parse_catalog_csv(content)

@@ -42,12 +42,21 @@ def upsert_catalog_property(
         item = CatalogProperty()
         created = True
 
-    item.external_id = row.external_id
+    # если объект был найден fallback-ом и external_id пришел только сейчас — допривязываем
+    if row.external_id:
+        item.external_id = row.external_id
+
     item.display_name = row.display_name
     item.address_full = row.address_full
     item.project_name = row.project_name
     item.city = row.city
+    item.street = row.street
+    item.house = row.house
+    item.building = row.building
     item.property_type = row.property_type
+    item.status = row.status or "built"
+    item.latitude = row.latitude
+    item.longitude = row.longitude
     item.is_active = True
 
     db.add(item)

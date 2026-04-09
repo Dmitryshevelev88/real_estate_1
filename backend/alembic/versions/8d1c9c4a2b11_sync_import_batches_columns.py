@@ -34,3 +34,18 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_column("import_batches", "error_message")
     op.drop_column("import_batches", "updated_at")
+
+
+    from alembic import op
+import sqlalchemy as sa
+
+
+def upgrade() -> None:
+    op.add_column(
+        "import_batches",
+        sa.Column("result_payload", sa.JSON(), nullable=True),
+    )
+
+
+def downgrade() -> None:
+    op.drop_column("import_batches", "result_payload")

@@ -4,13 +4,14 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.import_batch import ImportBatch
+from app.schemas.imports import CatalogCsvImportResult, ImportBatchOut
 from app.services.imports.batch_service import start_batch
 from app.services.imports.import_orchestrator import run_catalog_csv_import
 
 router = APIRouter(prefix="/admin/import-batches", tags=["admin-imports"])
 
 
-@router.post("/upload")
+@router.post("/upload", response_model=CatalogCsvImportResult)
 def upload_catalog_csv(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -25,13 +26,12 @@ def upload_catalog_csv(
 
     try:
         content = file.file.read()
-        result = run_catalog_csv_import(db, batch, content)
-        return result
+        return run_catalog_csv_import(db, batch, content)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Import failed: {exc}")
 
 
-@router.get("")
+@router.get("", response_model=list[ImportBatchOut])
 def list_import_batches(db: Session = Depends(get_db)):
     items = db.scalars(
         select(ImportBatch).order_by(ImportBatch.id.desc())
@@ -39,7 +39,7 @@ def list_import_batches(db: Session = Depends(get_db)):
     return list(items)
 
 
-@router.get("/{batch_id}")
+@router.get("/{batch_id}", response_model=ImportBatchOut)
 def get_import_batch(batch_id: int, db: Session = Depends(get_db)):
     item = db.get(ImportBatch, batch_id)
     if not item:

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.property_analytics import PropertyAnalytics
@@ -18,10 +18,20 @@ def unpublish_previous_analytics(db: Session, catalog_property_id: int) -> None:
         db.add(item)
 
 
+def get_next_analytics_version(db: Session, catalog_property_id: int) -> int:
+    current_max = db.scalar(
+        select(func.max(PropertyAnalytics.version)).where(
+            PropertyAnalytics.catalog_property_id == catalog_property_id
+        )
+    )
+    return (current_max or 0) + 1
+
+
 def create_analytics_version(
     db: Session,
     catalog_property_id: int,
     row: CatalogImportRow,
+    default_source_label: str | None = None,
 ) -> PropertyAnalytics:
     unpublish_previous_analytics(db, catalog_property_id)
 
@@ -33,12 +43,11 @@ def create_analytics_version(
         insolation=row.insolation,
         development=row.development,
         source_type="csv",
-        source_label=row.source_label,
-        version=row.version,
+        source_label=row.source_label or default_source_label,
+        version=get_next_analytics_version(db, catalog_property_id),
         is_published=True,
     )
 
     db.add(analytics)
     db.flush()
-
     return analytics

@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy.orm import Session
 
 from app.models.import_batch import ImportBatch
@@ -15,31 +17,43 @@ def run_catalog_csv_import(
     db: Session,
     batch: ImportBatch,
     content: bytes,
-) -> dict:
+) -> dict[str, Any]:
     try:
-        rows, errors = parse_catalog_csv(content)
-        mark_batch_processing(db, batch, rows_total=len(rows) + len(errors))
+        rows, parse_errors = parse_catalog_csv(content)
+
+        mark_batch_processing(db, batch, rows_total=len(rows) + len(parse_errors))
 
         rows_created = 0
         rows_updated = 0
+        row_errors: list[dict[str, Any]] = list(parse_errors)
 
-        for row in rows:
-            item, created = upsert_catalog_property(db, row)
-            create_analytics_version(db, item.id, row)
+        for row_number, row in rows:
+            try:
+                item, created = upsert_catalog_property(db, row)
+                create_analytics_version(db, item.id, row)
 
-            if created:
-                rows_created += 1
-            else:
-                rows_updated += 1
+                if created:
+                    rows_created += 1
+                else:
+                    rows_updated += 1
 
-        db.commit()
+                db.commit()
+            except Exception as exc:
+                db.rollback()
+                row_errors.append(
+                    {
+                        "row_number": row_number,
+                        "row_data": row.model_dump(),
+                        "error": str(exc),
+                    }
+                )
 
         mark_batch_done(
             db,
             batch,
             rows_created=rows_created,
             rows_updated=rows_updated,
-            rows_failed=len(errors),
+            rows_failed=len(row_errors),
         )
 
         return {
@@ -49,9 +63,8 @@ def run_catalog_csv_import(
             "rows_created": batch.rows_created,
             "rows_updated": batch.rows_updated,
             "rows_failed": batch.rows_failed,
-            "errors": errors,
+            "errors": row_errors,
         }
-
     except Exception as exc:
         db.rollback()
         mark_batch_failed(db, batch, str(exc))
