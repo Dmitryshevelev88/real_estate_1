@@ -34,3 +34,21 @@ class CatalogPropertyOut(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CatalogPropertyAdminUpdate(BaseModel):
+    external_id: str | None = None
+    display_name: str | None = None
+    address_full: str | None = None
+    project_name: str | None = None
+    city: str | None = None
+    street: str | None = None
+    house: str | None = None
+    building: str | None = None
+    property_type: str | None = None
+    status: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    is_active: bool | None = None
+
+    model_config = ConfigDict(extra="forbid")
